@@ -1,22 +1,31 @@
-# express-jwt-authz ![](https://travis-ci.org/auth0/express-jwt-authz.svg?branch=master)
+# express-jwt-aserto ![](https://travis-ci.org/aserto/express-jwt-aserto.svg?branch=master)
 
-Validate a JWTs `scope` to authorize access to an endpoint.
+Aserto authorization middleware for the node Express server, based on
+Auth0's [express-jwt-authz](https://github.com/auth0/express-jwt-authz)
+package.
+
+This package provides two capabilities:
+
+1. `jwtAuthz`: Validate a request carrying a JWT to authorize access to an endpoint.
+2. `authzMap`: An endpoint for returning authorization policy for a service.
 
 ## Install
 
-    $ npm install express-jwt-authz
+    $ npm install express-jwt-aserto
 
 > `express@^4.0.0` is a peer dependency. Make sure it is installed in your project.
 
 ## Usage
 
-Use together with [express-jwt](https://github.com/auth0/express-jwt) to both validate a JWT and make sure it has the correct permissions to call an endpoint.
+### jwtAuthz
+
+Use the jwtAuthz function together with [express-jwt](https://github.com/auth0/express-jwt) to both validate a JWT and make sure it has the correct permissions to call an endpoint.
 
 ```javascript
-var jwt = require('express-jwt');
-var jwtAuthz = require('express-jwt-authz');
+const jwt = require('express-jwt');
+const { jwtAuthz } = require('express-jwt-authz');
 
-var options = {};
+const options = {};
 app.get('/users',
   jwt({ secret: 'shared_secret' }),
   jwtAuthz([ 'read:users' ], options),
@@ -66,13 +75,40 @@ The JWT must have a `scope` claim and it must either be a string of space-separa
 ["write:users", "read:users"]
 ```
 
+### authzMap
+
+Use the authzMap function to set up an endpoint that returns the authorization map to a caller.
+
+```javascript
+const { authzMap } = require('express-jwt-aserto');
+
+const options = {
+  // policyFile: './path-to-policy-file' // defaults to './policy.yml'
+  // endpointName: '/authzmap-endpointname' // defaults to '/authzmap'
+};
+app.use(authzMap(options));
+```
+
+### using both jwtAuthz and authzMap is the common usage
+
+```javascript
+const { authzMap, jwtAuthz } = require('express-jwt-aserto');
+```
+
 ## Options
+
+### jwtAuthz
 
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `checkAllScopes`: When set to `true`, all the expected scopes will be checked against the user's scopes. Defaults to `false`.
 - `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customScopeKey`: The property name to check for the actual scope. By default, permissions are checked against `user.scope`, but you can change it to be `user.myCustomScopeKey` with this option. Defaults to `scope`.
 
+### authzMap
+
+- `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
+- `policyFile`: policy file name, defaults to `./policy.yml`
+- `endpointName`: authorization map endpoint name, defaults to `/authzmap`
 
 ## Issue Reporting
 
@@ -80,7 +116,7 @@ If you have found a bug or if you have a feature request, please report them at 
 
 ## Author
 
-[Auth0](https://auth0.com)
+[Aserto](https://aserto.com) based on the original work by [Auth0](https://auth0.com).
 
 ## License
 

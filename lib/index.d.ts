@@ -1,6 +1,9 @@
 import * as express from 'express';
 
-export = jwtAuthz;
+export = {
+  jwtAuthz,
+  authzMap
+};
 
 declare function jwtAuthz(
   expectedScopes: jwtAuthz.AuthzScopes,
@@ -15,5 +18,15 @@ declare namespace jwtAuthz {
     customScopeKey?: string;
     customUserKey?: string;
     checkAllScopes?: boolean;
+  }
+}
+
+declare function authzMap(options?: authzMap.AuthzOptions): express.Handler;
+
+declare namespace authzMap {
+  export interface AuthzOptions {
+    failWithError?: boolean;
+    policyFile?: string;
+    endpointName?: string;
   }
 }
