@@ -7,7 +7,7 @@ package.
 This package provides two capabilities:
 
 1. `jwtAuthz`: Validate a request carrying a JWT to authorize access to an endpoint.
-2. `authzMap`: An endpoint for returning authorization policy for a service.
+2. `accessMap`: An endpoint for returning the access map for a service, based on its authorization policy.
 
 ## Install
 
@@ -75,24 +75,24 @@ The JWT must have a `scope` claim and it must either be a string of space-separa
 ["write:users", "read:users"]
 ```
 
-### authzMap
+### accessMap
 
-Use the authzMap function to set up an endpoint that returns the authorization map to a caller.
+Use the accessMap function to set up an endpoint that returns the access map to a caller.
 
 ```javascript
-const { authzMap } = require('express-jwt-aserto');
+const { accessMap } = require('express-jwt-aserto');
 
 const options = {
-  // policyFile: './path-to-policy-file' // defaults to './policy.yml'
-  // endpointName: '/authzmap-endpointname' // defaults to '/authzmap'
+  // policyFile: './path-to-policy-file', // defaults to './policy.yml'
+  // endpointName: '/accessmap-endpoint'  // defaults to '/__accessmap'
 };
-app.use(authzMap(options));
+app.use(accessMap(options));
 ```
 
-### using both jwtAuthz and authzMap is the common usage
+### using both jwtAuthz and accessMap is the common usage
 
 ```javascript
-const { authzMap, jwtAuthz } = require('express-jwt-aserto');
+const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 ```
 
 ## Options
@@ -104,11 +104,11 @@ const { authzMap, jwtAuthz } = require('express-jwt-aserto');
 - `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customScopeKey`: The property name to check for the actual scope. By default, permissions are checked against `user.scope`, but you can change it to be `user.myCustomScopeKey` with this option. Defaults to `scope`.
 
-### authzMap
+### accessMap
 
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `policyFile`: policy file name, defaults to `./policy.yml`
-- `endpointName`: authorization map endpoint name, defaults to `/authzmap`
+- `endpointName`: access map endpoint name, defaults to `/__accessmap`
 
 ## Issue Reporting
 

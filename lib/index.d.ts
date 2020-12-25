@@ -2,7 +2,7 @@ import * as express from 'express';
 
 export = {
   jwtAuthz,
-  authzMap
+  accessMap
 };
 
 declare function jwtAuthz(
@@ -21,10 +21,12 @@ declare namespace jwtAuthz {
   }
 }
 
-declare function authzMap(options?: authzMap.AuthzOptions): express.Handler;
+declare function accessMap(
+  options?: accessMap.AccessMapOptions
+): express.Handler;
 
-declare namespace authzMap {
-  export interface AuthzOptions {
+declare namespace accessMap {
+  export interface AccessMapOptions {
     failWithError?: boolean;
     policyFile?: string;
     endpointName?: string;
