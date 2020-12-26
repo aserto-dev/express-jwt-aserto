@@ -30,6 +30,7 @@ declare namespace accessMap {
   export interface AccessMapOptions {
     authorizerService: string;
     failWithError?: boolean;
+    customUserKey?: string;
     endpointPath?: string;
   }
 }

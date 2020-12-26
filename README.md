@@ -111,6 +111,7 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 - `authorizerService`: hostname of authorizer service (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
+- `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `endpointPath`: access map endpoint path, defaults to `/__accessmap`
 
 ## Issue Reporting
