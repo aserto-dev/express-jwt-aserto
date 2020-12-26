@@ -14,6 +14,7 @@ declare namespace jwtAuthz {
   export type AuthzScopes = string[];
 
   export interface AuthzOptions {
+    authorizerService: string;
     failWithError?: boolean;
     customScopeKey?: string;
     customUserKey?: string;
@@ -27,8 +28,8 @@ declare function accessMap(
 
 declare namespace accessMap {
   export interface AccessMapOptions {
+    authorizerService: string;
     failWithError?: boolean;
-    policyFile?: string;
-    endpointName?: string;
+    endpointPath?: string;
   }
 }

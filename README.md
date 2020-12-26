@@ -7,9 +7,11 @@ package.
 This package provides two capabilities:
 
 1. `jwtAuthz`: Validate a request carrying a JWT to authorize access to an endpoint.
-2. `accessMap`: An endpoint for returning the access map for a service, based on its authorization policy.
+2. `accessMap`: Adds an endpoint for returning the access map for a service, based on its authorization policy.
 
-## Install
+Both of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
+
+## Installation
 
     $ npm install express-jwt-aserto
 
@@ -23,7 +25,7 @@ Use the jwtAuthz function together with [express-jwt](https://github.com/auth0/e
 
 ```javascript
 const jwt = require('express-jwt');
-const { jwtAuthz } = require('express-jwt-authz');
+const { jwtAuthz } = require('express-jwt-aserto');
 
 const options = {};
 app.get('/users',
@@ -83,8 +85,8 @@ Use the accessMap function to set up an endpoint that returns the access map to 
 const { accessMap } = require('express-jwt-aserto');
 
 const options = {
-  // policyFile: './path-to-policy-file', // defaults to './policy.yml'
-  // endpointName: '/accessmap-endpoint'  // defaults to '/__accessmap'
+  authorizerService: 'localhost:8383', // required - must pass a valid hostname
+  endpointPath: '/__accessmap' // defaults to '/__accessmap'
 };
 app.use(accessMap(options));
 ```
@@ -99,6 +101,7 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 ### jwtAuthz
 
+- `authorizerService`: hostname of authorizer service (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `checkAllScopes`: When set to `true`, all the expected scopes will be checked against the user's scopes. Defaults to `false`.
 - `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
@@ -106,9 +109,9 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 ### accessMap
 
+- `authorizerService`: hostname of authorizer service (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
-- `policyFile`: policy file name, defaults to `./policy.yml`
-- `endpointName`: access map endpoint name, defaults to `/__accessmap`
+- `endpointPath`: access map endpoint path, defaults to `/__accessmap`
 
 ## Issue Reporting
 
