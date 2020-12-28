@@ -85,7 +85,7 @@ Use the accessMap function to set up an endpoint that returns the access map to 
 const { accessMap } = require('express-jwt-aserto');
 
 const options = {
-  authorizerService: 'localhost:8383', // required - must pass a valid hostname
+  authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid hostname
   applicationName: 'application', // required - application name string
   endpointPath: '/__accessmap' // defaults to '/__accessmap'
 };
@@ -102,7 +102,7 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 ### jwtAuthz
 
-- `authorizerService`: hostname of authorizer service (required)
+- `authorizerServiceUrl`: hostname of authorizer service (required)
 - `applicationName`: application name (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `checkAllScopes`: When set to `true`, all the expected scopes will be checked against the user's scopes. Defaults to `false`.
@@ -111,7 +111,7 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 ### accessMap
 
-- `authorizerService`: hostname of authorizer service (required)
+- `authorizerServiceUrl`: hostname of authorizer service (required)
 - `applicationName`: application name (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
