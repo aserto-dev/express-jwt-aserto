@@ -27,55 +27,19 @@ Use the jwtAuthz function together with [express-jwt](https://github.com/auth0/e
 const jwt = require('express-jwt');
 const { jwtAuthz } = require('express-jwt-aserto');
 
-const options = {};
+const options = {
+  authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
+};
 app.get('/users',
   jwt({ secret: 'shared_secret' }),
-  jwtAuthz([ 'read:users' ], options),
+  jwtAuthz(policy, resource, options),
   function(req, res) { ... });
 ```
 
-If multiple scopes are provided, the user must have _at least one_ of the specified scopes.
+Parameters:
 
-```javascript
-app.post('/users',
-  jwt({ secret: 'shared_secret' }),
-  jwtAuthz([ 'read:users', 'write:users' ], {}),
-  function(req, res) { ... });
-
-// This user will be granted access
-var authorizedUser = {
-  scope: 'read:users'
-};
-```
-
-To check that the user has _all_ the scopes provided, use the `checkAllScopes: true` option:
-
-```javascript
-app.post('/users',
-  jwt({ secret: 'shared_secret' }),
-  jwtAuthz([ 'read:users', 'write:users' ], { checkAllScopes: true }),
-  function(req, res) { ... });
-
-// This user will have access
-var authorizedUser = {
-  scope: 'read:users write:users'
-};
-
-// This user will NOT have access
-var unauthorizedUser = {
-  scope: 'read:users'
-};
-```
-
-The JWT must have a `scope` claim and it must either be a string of space-separated permissions or an array of strings. For example:
-
-```
-// String:
-"write:users read:users"
-
-// Array:
-["write:users", "read:users"]
-```
+- `policy`: a string representing the package in the policy definition.
+- `resource`: a string representing a resource context to use when evaluate the policy.
 
 ### accessMap
 
@@ -85,9 +49,9 @@ Use the accessMap function to set up an endpoint that returns the access map to 
 const { accessMap } = require('express-jwt-aserto');
 
 const options = {
-  authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid hostname
+  authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
   applicationName: 'application', // required - application name string
-  endpointPath: '/__accessmap' // defaults to '/__accessmap'
+  endpointPath: '/__accessmap' // optional - defaults to '/__accessmap'
 };
 app.use(accessMap(options));
 ```
@@ -102,20 +66,20 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 ### jwtAuthz
 
-- `authorizerServiceUrl`: hostname of authorizer service (required)
-- `applicationName`: application name (required)
+- `authorizerServiceUrl`: URL of authorizer service (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `checkAllScopes`: When set to `true`, all the expected scopes will be checked against the user's scopes. Defaults to `false`.
-- `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
-- `customScopeKey`: The property name to check for the actual scope. By default, permissions are checked against `user.scope`, but you can change it to be `user.myCustomScopeKey` with this option. Defaults to `scope`.
+- `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
+- `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
 ### accessMap
 
-- `authorizerServiceUrl`: hostname of authorizer service (required)
+- `authorizerServiceUrl`: URL of authorizer service (required)
 - `applicationName`: application name (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
-- `customUserKey`: The property name to check for the scope key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
-- `endpointPath`: access map endpoint path, defaults to `/__accessmap`
+- `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
+- `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
+- `endpointPath`: access map endpoint path, defaults to `/__accessmap`.
 
 ## Issue Reporting
 
