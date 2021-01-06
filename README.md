@@ -30,16 +30,23 @@ const { jwtAuthz } = require('express-jwt-aserto');
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
 };
-app.get('/users',
+
+// policy is the Rego package name
+const policy = 'mycars.users.__id.get';
+
+// resourceKey is the key into the req.params map from which to extract the resource
+const resourceKey = 'id';
+
+app.get('/users/:id',
   jwt({ secret: 'shared_secret' }),
-  jwtAuthz(policy, resource, options),
+  jwtAuthz(policy, resourceKey, options),
   function(req, res) { ... });
 ```
 
 Parameters:
 
 - `policy`: a string representing the package in the policy definition.
-- `resource`: a string representing a resource context to use when evaluate the policy.
+- `resourceKey`: a key into the req.params map to extract the resource from, or `''`
 
 ### accessMap
 
@@ -68,7 +75,6 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 - `authorizerServiceUrl`: URL of authorizer service (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
-- `checkAllScopes`: When set to `true`, all the expected scopes will be checked against the user's scopes. Defaults to `false`.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
