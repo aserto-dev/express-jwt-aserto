@@ -16,10 +16,10 @@ declare namespace jwtAuthz {
   export interface AuthzOptions {
     authorizerServiceUrl: string;
     applicationName: string;
+    useAuthorizationHeader?: boolean;
     failWithError?: boolean;
-    customScopeKey?: string;
     customUserKey?: string;
-    checkAllScopes?: boolean;
+    customSubjectKey?: string;
   }
 }
 
@@ -31,8 +31,10 @@ declare namespace accessMap {
   export interface AccessMapOptions {
     authorizerServiceUrl: string;
     applicationName: string;
+    useAuthorizationHeader?: boolean;
     failWithError?: boolean;
     customUserKey?: string;
+    customSubjectKey?: string;
     endpointPath?: string;
   }
 }

@@ -29,24 +29,39 @@ const { jwtAuthz } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
+  applicationName: 'mycars' // required - must be a string representing the application name
 };
-
-// policy is the Rego package name
-const policy = 'mycars.users.__id.get';
-
-// resourceKey is the key into the req.params map from which to extract the resource
-const resourceKey = 'id';
 
 app.get('/users/:id',
   jwt({ secret: 'shared_secret' }),
-  jwtAuthz(policy, resourceKey, options),
+  jwtAuthz(options),
   function(req, res) { ... });
 ```
 
-Parameters:
+By default, `jwtAuthz` derives the policy name and resource key from the Express route path. To override this behavior, two optional parameters are available.
 
-- `policy`: a string representing the package in the policy definition.
-- `resourceKey`: a key into the req.params map to extract the resource from, or `''`
+`jwtAuthz(options[, policyName[, resourceKey]])`
+
+- `options`: a javascript map containing `{ authorizerServiceUrl, applicationName }`
+- `policyName`: a string representing the package name for the the policy
+- `resourceKey`: a key into the req.params map to extract the resource from
+
+#### policy name
+
+By default, the policy name will be derived in the following way from the application name, route path, and HTTP method:
+
+`GET /api/users` --> `applicationName.api.users.get`
+`POST /api/users/:id` --> `applicationName.api.users.__id.post`
+
+Passing in the `policyName` parameter into the `jwtAuthz()` function will override this behavior.
+
+#### resource key
+
+By default, the resource key will be derived from the first parameter marker in the route path:
+
+if the route path is `/api/users/:id`, the resource will be extracted from `req.params['id']`.
+
+Passing in the `resourceKey` parameter into the `jwtAuthz()` function will override this behavior. For example, passing in `paramName` will retrieve the resource from `req.params.paramName`.
 
 ### accessMap
 
