@@ -50,8 +50,8 @@ By default, `jwtAuthz` derives the policy name and resource key from the Express
 
 By default, the policy name will be derived in the following way from the application name, route path, and HTTP method:
 
-`GET /api/users` --> `applicationName.api.users.get`
-`POST /api/users/:id` --> `applicationName.api.users.__id.post`
+`GET /api/users` --> `applicationName.GET.api.users`
+`POST /api/users/:id` --> `applicationName.POST.api.users.__id`
 
 Passing in the `policyName` parameter into the `jwtAuthz()` function will override this behavior.
 
@@ -89,6 +89,7 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 ### jwtAuthz
 
 - `authorizerServiceUrl`: URL of authorizer service (required)
+- `applicationName`: application name (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
