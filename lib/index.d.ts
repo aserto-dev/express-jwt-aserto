@@ -2,21 +2,22 @@ import * as express from 'express';
 
 export = {
   jwtAuthz,
-  accessMap
+  accessMap,
+  isAuthorized
 };
 
 declare function jwtAuthz(
-  expectedScopes: jwtAuthz.AuthzScopes,
-  options?: jwtAuthz.AuthzOptions
+  options: jwtAuthz.AuthzOptions,
+  policyName?: string,
+  resourceKey?: string
 ): express.Handler;
 
 declare namespace jwtAuthz {
-  export type AuthzScopes = string[];
-
   export interface AuthzOptions {
     authorizerServiceUrl: string;
     applicationName: string;
     useAuthorizationHeader?: boolean;
+    identityHeader?: string;
     failWithError?: boolean;
     customUserKey?: string;
     customSubjectKey?: string;
@@ -24,7 +25,7 @@ declare namespace jwtAuthz {
 }
 
 declare function accessMap(
-  options?: accessMap.AccessMapOptions
+  options: accessMap.AccessMapOptions
 ): express.Handler;
 
 declare namespace accessMap {
@@ -32,9 +33,31 @@ declare namespace accessMap {
     authorizerServiceUrl: string;
     applicationName: string;
     useAuthorizationHeader?: boolean;
+    identityHeader?: string;
     failWithError?: boolean;
     customUserKey?: string;
     customSubjectKey?: string;
     endpointPath?: string;
+  }
+}
+
+declare function isAuthorized(
+  options: isAuthorized.AuthzOptions,
+  policy: isAuthorized.Policy,
+  resource: isAuthorized.Resource
+): express.Handler;
+
+declare namespace isAuthorized {
+  export type Policy = string;
+  export type Resource = string;
+
+  export interface AuthzOptions {
+    authorizerServiceUrl: string;
+    applicationName: string;
+    useAuthorizationHeader?: boolean;
+    identityHeader?: string;
+    failWithError?: boolean;
+    customUserKey?: string;
+    customSubjectKey?: string;
   }
 }

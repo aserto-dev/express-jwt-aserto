@@ -4,12 +4,13 @@ Aserto authorization middleware for the node Express server, based on
 Auth0's [express-jwt-authz](https://github.com/auth0/express-jwt-authz)
 package.
 
-This package provides two capabilities:
+This package provides three capabilities:
 
-1. `jwtAuthz`: Validate a request carrying a JWT to authorize access to an endpoint.
-2. `accessMap`: Adds an endpoint for returning the access map for a service, based on its authorization policy.
+1. `jwtAuthz`: middleware that sits on a route, and validates a request to authorize access to that route.
+2. `accessMap`: middleware that adds an endpoint for returning the access map for a service, based on its authorization policy.
+3. `isAuthorized`: a function that can be called to authorize a user's access to a resource based on a policy.
 
-Both of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
+All three of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
 
 ## Installation
 
@@ -21,7 +22,7 @@ Both of these capabilities call out to an authorizer service, which must be conf
 
 ### jwtAuthz
 
-Use the jwtAuthz function together with [express-jwt](https://github.com/auth0/express-jwt) to both validate a JWT and make sure it has the correct permissions to call an endpoint.
+You can use the jwtAuthz function together with [express-jwt](https://github.com/auth0/express-jwt) to both validate a JWT and make sure it has the correct permissions to call an endpoint.
 
 ```javascript
 const jwt = require('express-jwt');
@@ -72,17 +73,45 @@ const { accessMap } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  applicationName: 'application', // required - application name string
-  endpointPath: '/__accessmap' // optional - defaults to '/__accessmap'
+  applicationName: 'application' // required - application name string
 };
 app.use(accessMap(options));
 ```
 
-### using both jwtAuthz and accessMap is the common usage
+### isAuthorized
+
+Use the isAuthorized function to call the authorizer with a policy and resource, and get a boolean `true` or `false` response based on whether the user has permission to the resource based on the policy.
 
 ```javascript
-const { accessMap, jwtAuthz } = require('express-jwt-aserto');
+const { isAuthorized } = require('express-jwt-aserto');
+
+const options = {
+  authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
+};
+const policyName = 'application.GET.users.__id';
+
+app.get('/users/:id', async function(req, res) {
+  try {
+    const allowed = await isAuthorized(req, options, policyName, req.params.id);
+    if (allowed) {
+      ...
+    } else {
+      res.status(403).send("Unauthorized");
+    }
+  } catch (e) {
+    res.status(500).send(e.message);
+  }
+});
 ```
+
+#### arguments
+
+`isAuthorized(req, options, policy, resource)`:
+
+- `req`: Express request object (required)
+- `options`: a javascript map containing at least`{ authorizerServiceUrl }` (required)
+- `policy`: a string representing the package name for the the policy (required)
+- `resource`: the resource to evaluate the policy over (optional)
 
 ## Options
 
@@ -90,7 +119,8 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 
 - `authorizerServiceUrl`: URL of authorizer service (required)
 - `applicationName`: application name (required)
-- `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
+- `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. - `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
+- `identityHeader`: the name of the header from which to extract the `identity` field to pass into the accessMap call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
@@ -99,13 +129,23 @@ const { accessMap, jwtAuthz } = require('express-jwt-aserto');
 - `authorizerServiceUrl`: URL of authorizer service (required)
 - `applicationName`: application name (required)
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
+- `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
+- `identityHeader`: the name of the header from which to extract the `identity` field to pass into the accessMap call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 - `endpointPath`: access map endpoint path, defaults to `/__accessmap`.
 
+### jwtAuthz
+
+- `authorizerServiceUrl`: URL of authorizer service (required)
+- `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
+- `identityHeader`: the name of the header from which to extract the `identity` field to pass into the accessMap call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
+- `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
+- `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
+
 ## Issue Reporting
 
-If you have found a bug or if you have a feature request, please report them at this repository issues section. Please do not report security vulnerabilities on the public GitHub issue tracker. The [Responsible Disclosure Program](https://auth0.com/whitehat) details the procedure for disclosing security issues.
+If you have found a bug or if you have a feature request, please report them at this repository issues section. Please do not report security vulnerabilities on the public GitHub issue tracker.
 
 ## Author
 
