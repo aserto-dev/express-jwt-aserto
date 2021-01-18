@@ -8,7 +8,7 @@ This package provides three capabilities:
 
 1. `jwtAuthz`: middleware that sits on a route, and validates a request to authorize access to that route.
 2. `accessMap`: middleware that adds an endpoint for returning the access map for a service, based on its authorization policy.
-3. `isAuthorized`: a function that can be called to authorize a user's access to a resource based on a policy.
+3. `isAllowed`: a function that can be called to authorize a user's access to a resource based on a policy.
 
 All three of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
 
@@ -107,14 +107,14 @@ app.use(accessMap(options));
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
-### isAuthorized function
+### isAllowed function
 
-While `jwtAuthz` is meant to be used as dispatch middleware for a route, `isAuthorized` provides an explicit mechanism for calling the Aserto authorizer.
+While `jwtAuthz` is meant to be used as dispatch middleware for a route, `isAllowed` provides an explicit mechanism for calling the Aserto authorizer.
 
-Use the `isAuthorized` function to call the authorizer with a policy and resource, and get a boolean `true` or `false` response based on whether the user has permission to the resource based on the policy.
+Use the `isAllowed` function to call the authorizer with a policy and resource, and get a boolean `true` or `false` response based on whether the user has permission to the resource based on the policy.
 
 ```javascript
-const { isAuthorized } = require('express-jwt-aserto');
+const { isAllowed } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
@@ -123,7 +123,7 @@ const policyName = 'application.GET.users.__id';
 
 app.get('/users/:id', async function(req, res) {
   try {
-    const allowed = await isAuthorized(req, options, policyName, req.params.id);
+    const allowed = await isAllowed(req, options, policyName, req.params.id);
     if (allowed) {
       ...
     } else {
@@ -137,7 +137,7 @@ app.get('/users/:id', async function(req, res) {
 
 #### arguments
 
-`isAuthorized(req, options, policy[, resource])`:
+`isAllowed(req, options, policy[, resource])`:
 
 - `req`: Express request object (_required_)
 - `options`: a javascript map containing at least`{ authorizerServiceUrl }` (_required_)
