@@ -8,7 +8,7 @@ This package provides three capabilities:
 
 1. `jwtAuthz`: middleware that sits on a route, and validates a request to authorize access to that route.
 2. `accessMap`: middleware that adds an endpoint for returning the access map for a service, based on its authorization policy.
-3. `isAllowed`: a function that can be called to authorize a user's access to a resource based on a policy.
+3. `is`: a function that can be called to make a decision about a user's access to a resource based on a policy.
 
 All three of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
 
@@ -47,7 +47,7 @@ By default, `jwtAuthz` derives the policy name and resource key from the Express
 
 `jwtAuthz(options[, policyName[, resourceKey]])`:
 
-- `options`: a javascript map containing `{ authorizerServiceUrl, applicationName }`
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, applicationName }`
 - `policyName`: a string representing the package name for the the policy
 - `resourceKey`: a key into the req.params map to extract the resource from
 
@@ -65,7 +65,7 @@ By default, `jwtAuthz` derives the policy name and resource key from the Express
 
 #### policyName argument
 
-By default, the policy name will be derived in the following way from the application name, route path, and HTTP method:
+By convention, Aserto policy package names are of the form `application.METHOD.path`. By default, the policy name will be inferred from the application name, HTTP method, and route path:
 
 - `GET /api/users` --> `applicationName.GET.api.users`
 - `POST /api/users/:id` --> `applicationName.POST.api.users.__id`
@@ -74,11 +74,9 @@ Passing in the `policyName` parameter into the `jwtAuthz()` function will overri
 
 #### resourceKey argument
 
-By default, the resource key will be derived from the first parameter marker in the route path:
+By default, the resource key will be derived from the first parameter marker in the route path. For example, if the route path is `/api/users/:id`, the resource will be extracted from `req.params.id'`.
 
-if the route path is `/api/users/:id`, the resource will be extracted from `req.params['id']`.
-
-Passing in the `resourceKey` parameter into the `jwtAuthz()` function will override this behavior. For example, passing in `paramName` will retrieve the resource from `req.params.paramName`.
+Passing in the `resourceKey` parameter into the `jwtAuthz()` function will override this behavior. For example, passing in `myParam` will retrieve the resource from `req.params.myParam`.
 
 ### accessMap middleware
 
@@ -111,23 +109,23 @@ app.use(accessMap(options));
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
-### isAllowed function
+### 'is' function
 
-While `jwtAuthz` is meant to be used as dispatch middleware for a route, `isAllowed` provides an explicit mechanism for calling the Aserto authorizer.
+While `jwtAuthz` is meant to be used as dispatch middleware for a route, `is` provides an explicit mechanism for calling the Aserto authorizer.
 
-Use the `isAllowed` function to call the authorizer with a policy and resource, and get a boolean `true` or `false` response based on whether the user has permission to the resource based on the policy.
+Use the `is` function to call the authorizer with a `decision`, policy, and resource, and get a boolean `true` or `false` response. The `decision` is a named value in the policy: the string `allowed` is used by convention. Examples: `is('allowed')`, `is('enabled')`, `is('visible')`, etc.
 
 ```javascript
-const { isAllowed } = require('express-jwt-aserto');
+const { is } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
+  applicationName: 'application' // required - application name string
 };
-const policyName = 'application.GET.users.__id';
 
 app.get('/users/:id', async function(req, res) {
   try {
-    const allowed = await isAllowed(req, options, policyName, req.params.id);
+    const allowed = await is('allowed', req, options);
     if (allowed) {
       ...
     } else {
@@ -141,15 +139,25 @@ app.get('/users/:id', async function(req, res) {
 
 #### arguments
 
-`isAllowed(req, options, policy[, resource])`:
+`isAllowed(decision, req, options[, policy[, resource]])`:
 
+- `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
 - `options`: a javascript map containing at least`{ authorizerServiceUrl }` (_required_)
-- `policy`: a string representing the package name for the the policy (_required_)
+- `policy`: a string representing the package name for the the policy (optional)
 - `resource`: the resource to evaluate the policy over (optional)
+
+#### decision argument
+
+This is simply a string that is correlates to a decision referenced in the policy: for example, `allowed`, `enabled`, etc.
+
+#### req argument
+
+The Express request object.
 
 #### options argument
 
+- `applicationName`: application name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. This defaults to `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
@@ -157,6 +165,18 @@ app.get('/users/:id', async function(req, res) {
 - `identityHeader`: the name of the header from which to extract the `identity` field to pass into the `authorize` call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
+
+#### policy argument
+
+By default, `is` will follow the same heuristic behavior as `jwtAuthz` - it will infer the policy name from the application name, HTTP method, and route path. If provided, the `policy` argument will override this and specify a policy package to use.
+
+By convention, Aserto Rego policies are named in the form `application.METHOD.path`. Following the node.js idiom, you can also pass it in as `application/METHOD/path`, and the path can contain the Express parameter syntax.
+
+For example, passing in `applicationName/GET/api/users/:id` will resolve to a policy called `applicationName.GET.api.users.__id`.
+
+#### resource argument
+
+By default, `is` follows the same behavior as `jwtAuthz` and pick up the resource from the first parameter specified in the route. For example, if the route path is `/api/users/:id`, the resource will be extracted from `req.params.id`. If the `resource` argument is provided, it will be used instead.
 
 ## Certificates
 

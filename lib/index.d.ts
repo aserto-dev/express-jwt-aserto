@@ -3,7 +3,7 @@ import * as express from 'express';
 export = {
   jwtAuthz,
   accessMap,
-  isAllowed
+  is
 };
 
 declare function jwtAuthz(
@@ -45,13 +45,15 @@ declare namespace accessMap {
   }
 }
 
-declare function isAllowed(
-  options: isAllowed.AuthzOptions,
-  policy: isAllowed.Policy,
-  resource: isAllowed.Resource
-): express.Handler;
+declare function is(
+  decision: string,
+  req: express.Request,
+  options: is.AuthzOptions,
+  policy?: is.Policy,
+  resource?: is.Resource
+): boolean;
 
-declare namespace isAllowed {
+declare namespace is {
   export type Policy = string;
   export type Resource = string;
 
