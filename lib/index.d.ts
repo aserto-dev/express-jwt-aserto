@@ -21,6 +21,8 @@ declare namespace jwtAuthz {
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
     failWithError?: boolean;
+    customUserKey?: string;
+    customSubjectKey?: string;
   }
 }
 
@@ -37,6 +39,8 @@ declare namespace accessMap {
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
     failWithError?: boolean;
+    customUserKey?: string;
+    customSubjectKey?: string;
     endpointPath?: string;
   }
 }
@@ -61,5 +65,7 @@ declare namespace is {
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
     failWithError?: boolean;
+    customUserKey?: string;
+    customSubjectKey?: string;
   }
 }
