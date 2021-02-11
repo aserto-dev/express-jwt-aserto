@@ -55,7 +55,7 @@ By default, `jwtAuthz` derives the policy name and resource key from the Express
 
 - `applicationName`: application name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. This defaults to `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. See the "Certificates" section for more information.
+- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly.
 - `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
@@ -100,7 +100,7 @@ app.use(accessMap(options));
 
 - `applicationName`: application name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. This defaults to `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. See the "Certificates" section for more information.
+- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `endpointPath`: access map endpoint path, defaults to `/__accessmap`.
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
@@ -159,7 +159,7 @@ The Express request object.
 
 - `applicationName`: application name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. This defaults to `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. See the "Certificates" section for more information.
+- `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
 - `identityHeader`: the name of the header from which to extract the `identity` field to pass into the `authorize` call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
@@ -182,11 +182,13 @@ By default, `is` follows the same behavior as `jwtAuthz` and pick up the resourc
 
 The Aserto [authorizer](github.com/aserto-dev/aserto-one) exposes HTTPS-only endpoints. In order for a node.js application to properly communicate with the authorizer, TLS certificates must be verified.
 
+For a hosted authorizer that has a TLS certificate that is signed by a trusted Certificate Authority, this section isn't relevant because that TLS certificate will be successfully validated.
+
 In a development environment, the Aserto [one-box](github.com/aserto-dev/aserto-one) automatically creates a set of self-signed certificates and certificates of the CA (certificate authority) that signed them. It places them in a well-known location on the filesystem, defaulting to `$HOME/.config/aserto/aserto-one/certs/`.
 
-In order for the `express-jwt-aserto` package to perform the TLS handshake, it needs to verify the TLS certificate of the one-box using the certificate of the CA that signed it - which was placed in `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`.
+In order for the `express-jwt-aserto` package to perform the TLS handshake, it needs to verify the TLS certificate of the one-box using the certificate of the CA that signed it - which was placed in `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. Therefore, in order for this middleware to work successfully, either the `authorizerCertFile` must be set to the correct path for the CA cert file, or the `disableTlsValidation` flag must be set to `true`.
 
-When packaging an application for deployment (e.g. in a Docker container), you must copy this CA certificate into the container as part of the Docker build (typically performed in the Dockerfile). When you do that, you'll need to override the `authorizerCertFile` option that is passed into any of the API calls defined above with the location of this cert file.
+Furthermore, when packaging an application for deployment (e.g. in a Docker container) which uses `express-jwt-aserto` to communicate with an authorizer that has a self-signed TLS certificate, you must copy this CA certificate into the container as part of the Docker build (typically performed in the Dockerfile). When you do that, you'll need to override the `authorizerCertFile` option that is passed into any of the API calls defined above with the location of this cert file.
 
 Alternately, to ignore TLS certificate validation when creating a TLS connection to the authorizer, you can set the `disableTlsValidation` option to `true` and avoid TLS certificate validation. This option is **not recommended for production**.
 
