@@ -2,7 +2,7 @@ import * as express from 'express';
 
 export = {
   jwtAuthz,
-  accessMap,
+  displayStateMap,
   is
 };
 
@@ -26,12 +26,12 @@ declare namespace jwtAuthz {
   }
 }
 
-declare function accessMap(
-  options: accessMap.AccessMapOptions
+declare function displayStateMap(
+  options: displayStateMap.DisplayStateMapOptions
 ): express.Handler;
 
-declare namespace accessMap {
-  export interface AccessMapOptions {
+declare namespace displayStateMap {
+  export interface DisplayStateMapOptions {
     applicationName: string;
     authorizerServiceUrl: string;
     authorizerCertFile?: string;

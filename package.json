@@ -1,7 +1,7 @@
 {
   "name": "express-jwt-aserto",
   "version": "1.0.46",
-  "description": "Validate a JWT to authorize access to an endpoint",
+  "description": "Authorize access to an endpoint",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {

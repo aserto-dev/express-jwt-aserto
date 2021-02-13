@@ -7,7 +7,7 @@ package.
 This package provides three capabilities:
 
 1. `jwtAuthz`: middleware that sits on a route, and validates a request to authorize access to that route.
-2. `accessMap`: middleware that adds an endpoint for returning the access map for a service, based on its authorization policy.
+2. `displayStateMap`: middleware that adds an endpoint for returning the display state map for a service, based on its authorization policy.
 3. `is`: a function that can be called to make a decision about a user's access to a resource based on a policy.
 
 All three of these capabilities call out to an authorizer service, which must be configured as part of the `options` map passed in.
@@ -78,23 +78,23 @@ By default, the resource key will be derived from the first parameter marker in 
 
 Passing in the `resourceKey` parameter into the `jwtAuthz()` function will override this behavior. For example, passing in `myParam` will retrieve the resource from `req.params.myParam`.
 
-### accessMap middleware
+### displayStateMap middleware
 
-Use the accessMap middleware to set up an endpoint that returns the access map to a caller. The endpoint is named `__accessmap` by default, but can be overridden in `options`.
+Use the displayStateMap middleware to set up an endpoint that returns the display state map to a caller. The endpoint is named `__displaystatemap` by default, but can be overridden in `options`.
 
 ```javascript
-const { accessMap } = require('express-jwt-aserto');
+const { displayStateMap } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
   applicationName: 'application' // required - application name string
 };
-app.use(accessMap(options));
+app.use(displayStateMap(options));
 ```
 
 #### arguments
 
-`accessMap(options)`
+`displayStateMap(options)`
 
 #### options argument
 
@@ -102,10 +102,10 @@ app.use(accessMap(options));
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
-- `endpointPath`: access map endpoint path, defaults to `/__accessmap`.
+- `endpointPath`: display state map endpoint path, defaults to `/__displaystatemap`.
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly. Defaults to `false`.
 - `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
-- `identityHeader`: the name of the header from which to extract the `identity` field to pass into the accessMap call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
+- `identityHeader`: the name of the header from which to extract the `identity` field to pass into the displayStateMap call. This only happens if `useAuthorizationHeader` is false. Defaults to 'identity'.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
