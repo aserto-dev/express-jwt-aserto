@@ -14,8 +14,10 @@ declare function jwtAuthz(
 
 declare namespace jwtAuthz {
   export interface AuthzOptions {
-    applicationName: string;
+    policyName: string;
     authorizerServiceUrl: string;
+    authorizerApiKey?: string;
+    tenantId?: string;
     authorizerCertFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;
@@ -32,8 +34,10 @@ declare function displayStateMap(
 
 declare namespace displayStateMap {
   export interface DisplayStateMapOptions {
-    applicationName: string;
+    policyName: string;
     authorizerServiceUrl: string;
+    authorizerApiKey?: string;
+    tenantId?: string;
     authorizerCertFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;
@@ -58,8 +62,10 @@ declare namespace is {
   export type Resource = string;
 
   export interface AuthzOptions {
-    applicationName: string;
+    policyName: string;
     authorizerServiceUrl: string;
+    authorizerApiKey?: string;
+    tenantId?: string;
     authorizerCertFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;

@@ -32,7 +32,7 @@ const { jwtAuthz } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  applicationName: 'mycars' // required - must be a string representing the application name
+  policyName: 'mycars' // required - must be a string representing the policy name
 };
 
 app.get('/users/:id',
@@ -41,19 +41,19 @@ app.get('/users/:id',
   function(req, res) { ... });
 ```
 
-By default, `jwtAuthz` derives the policy name and resource key from the Express route path. To override this behavior, two optional parameters are available.
+By default, `jwtAuthz` derives the policy file name and resource key from the Express route path. To override this behavior, two optional parameters are available.
 
 #### arguments
 
-`jwtAuthz(options[, policyName[, resourceKey]])`:
+`jwtAuthz(options[, packageName[, resourceKey]])`:
 
-- `options`: a javascript map containing at least `{ authorizerServiceUrl, applicationName }`
-- `policyName`: a string representing the package name for the the policy
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyName }`
+- `packageName`: a string representing the policy package name
 - `resourceKey`: a key into the req.params map to extract the resource from
 
 #### options argument
 
-- `applicationName`: application name (_required_)
+- `policyName`: Policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
@@ -63,14 +63,14 @@ By default, `jwtAuthz` derives the policy name and resource key from the Express
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
-#### policyName argument
+#### packageName argument
 
-By convention, Aserto policy package names are of the form `application.METHOD.path`. By default, the policy name will be inferred from the application name, HTTP method, and route path:
+By convention, Aserto policy package names are of the form `policyName.METHOD.path`. By default, the package name will be inferred from the policy name, HTTP method, and route path:
 
-- `GET /api/users` --> `applicationName.GET.api.users`
-- `POST /api/users/:id` --> `applicationName.POST.api.users.__id`
+- `GET /api/users` --> `policyName.GET.api.users`
+- `POST /api/users/:id` --> `policyName.POST.api.users.__id`
 
-Passing in the `policyName` parameter into the `jwtAuthz()` function will override this behavior.
+Passing in the `packageName` parameter into the `jwtAuthz()` function will override this behavior.
 
 #### resourceKey argument
 
@@ -87,7 +87,7 @@ const { displayStateMap } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  applicationName: 'application' // required - application name string
+  policyName: 'policy' // required - policy name string
 };
 app.use(displayStateMap(options));
 ```
@@ -98,7 +98,7 @@ app.use(displayStateMap(options));
 
 #### options argument
 
-- `applicationName`: application name (_required_)
+- `policyName`: policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
@@ -120,7 +120,7 @@ const { is } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  applicationName: 'application' // required - application name string
+  policyName: 'policy' // required - policy name string
 };
 
 app.get('/users/:id', async function(req, res) {
@@ -139,12 +139,12 @@ app.get('/users/:id', async function(req, res) {
 
 #### arguments
 
-`isAllowed(decision, req, options[, policy[, resource]])`:
+`isAllowed(decision, req, options[, packageName[, resource]])`:
 
 - `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
 - `options`: a javascript map containing at least`{ authorizerServiceUrl }` (_required_)
-- `policy`: a string representing the package name for the the policy (optional)
+- `packageName`: a string representing the package name for the the policy (optional)
 - `resource`: the resource to evaluate the policy over (optional)
 
 #### decision argument
@@ -157,7 +157,7 @@ The Express request object.
 
 #### options argument
 
-- `applicationName`: application name (_required_)
+- `policyName`: policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
@@ -166,13 +166,13 @@ The Express request object.
 - `customUserKey`: The property name to check for the subject key. By default, permissions are checked against `req.user`, but you can change it to be `req.myCustomUserKey` with this option. Defaults to `user`.
 - `customSubjectKey`: The property name to check for the subject. By default, permissions are checked against `user.sub`, but you can change it to be `user.myCustomSubjectKey` with this option. Defaults to `sub`.
 
-#### policy argument
+#### packageName argument
 
-By default, `is` will follow the same heuristic behavior as `jwtAuthz` - it will infer the policy name from the application name, HTTP method, and route path. If provided, the `policy` argument will override this and specify a policy package to use.
+By default, `is` will follow the same heuristic behavior as `jwtAuthz` - it will infer the packge name from the policy name, HTTP method, and route path. If provided, the `packageName` argument will override this and specify a policy package to use.
 
-By convention, Aserto Rego policies are named in the form `application.METHOD.path`. Following the node.js idiom, you can also pass it in as `application/METHOD/path`, and the path can contain the Express parameter syntax.
+By convention, Aserto Rego policies are named in the form `policyName.METHOD.path`. Following the node.js idiom, you can also pass it in as `policyName/METHOD/path`, and the path can contain the Express parameter syntax.
 
-For example, passing in `applicationName/GET/api/users/:id` will resolve to a policy called `applicationName.GET.api.users.__id`.
+For example, passing in `policyName/GET/api/users/:id` will resolve to a policy called `policyName.GET.api.users.__id`.
 
 #### resource argument
 
@@ -180,7 +180,7 @@ By default, `is` follows the same behavior as `jwtAuthz` and pick up the resourc
 
 ## Certificates
 
-The Aserto [authorizer](github.com/aserto-dev/aserto-one) exposes HTTPS-only endpoints. In order for a node.js application to properly communicate with the authorizer, TLS certificates must be verified.
+The Aserto [authorizer](github.com/aserto-dev/aserto-one) exposes HTTPS-only endpoints. In order for a node.js policy to properly communicate with the authorizer, TLS certificates must be verified.
 
 For a hosted authorizer that has a TLS certificate that is signed by a trusted Certificate Authority, this section isn't relevant because that TLS certificate will be successfully validated.
 
@@ -188,7 +188,7 @@ In a development environment, the Aserto [one-box](github.com/aserto-dev/aserto-
 
 In order for the `express-jwt-aserto` package to perform the TLS handshake, it needs to verify the TLS certificate of the one-box using the certificate of the CA that signed it - which was placed in `$HOME/.config/aserto/aserto-one/certs/aserto-one-gateway-ca.crt`. Therefore, in order for this middleware to work successfully, either the `authorizerCertFile` must be set to the correct path for the CA cert file, or the `disableTlsValidation` flag must be set to `true`.
 
-Furthermore, when packaging an application for deployment (e.g. in a Docker container) which uses `express-jwt-aserto` to communicate with an authorizer that has a self-signed TLS certificate, you must copy this CA certificate into the container as part of the Docker build (typically performed in the Dockerfile). When you do that, you'll need to override the `authorizerCertFile` option that is passed into any of the API calls defined above with the location of this cert file.
+Furthermore, when packaging a policy for deployment (e.g. in a Docker container) which uses `express-jwt-aserto` to communicate with an authorizer that has a self-signed TLS certificate, you must copy this CA certificate into the container as part of the Docker build (typically performed in the Dockerfile). When you do that, you'll need to override the `authorizerCertFile` option that is passed into any of the API calls defined above with the location of this cert file.
 
 Alternately, to ignore TLS certificate validation when creating a TLS connection to the authorizer, you can set the `disableTlsValidation` option to `true` and avoid TLS certificate validation. This option is **not recommended for production**.
 
