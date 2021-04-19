@@ -32,7 +32,8 @@ const { jwtAuthz } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyName: 'mycars' // required - must be a string representing the policy name
+  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyRoot: 'mycars' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 
 app.get('/users/:id',
@@ -47,14 +48,17 @@ By default, `jwtAuthz` derives the policy file name and resource key from the Ex
 
 `jwtAuthz(options[, packageName[, resourceKey]])`:
 
-- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyName }`
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId, policyRoot }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer
 - `packageName`: a string representing the policy package name
 - `resourceKey`: a key into the req.params map to extract the resource from
 
 #### options argument
 
-- `policyName`: Policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
+- `policyId`: Policy ID (_required_)
+- `policyRoot`: Policy root (_required_)
+- `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
+- `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `failWithError`: When set to `true`, will forward errors to `next` instead of ending the response directly.
@@ -65,10 +69,10 @@ By default, `jwtAuthz` derives the policy file name and resource key from the Ex
 
 #### packageName argument
 
-By convention, Aserto policy package names are of the form `policyName.METHOD.path`. By default, the package name will be inferred from the policy name, HTTP method, and route path:
+By convention, Aserto policy package names are of the form `policyRoot.METHOD.path`. By default, the package name will be inferred from the policy name, HTTP method, and route path:
 
-- `GET /api/users` --> `policyName.GET.api.users`
-- `POST /api/users/:id` --> `policyName.POST.api.users.__id`
+- `GET /api/users` --> `policyRoot.GET.api.users`
+- `POST /api/users/:id` --> `policyRoot.POST.api.users.__id`
 
 Passing in the `packageName` parameter into the `jwtAuthz()` function will override this behavior.
 
@@ -87,7 +91,8 @@ const { displayStateMap } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyName: 'policy' // required - policy name string
+  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyRoot: 'policy' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 app.use(displayStateMap(options));
 ```
@@ -98,8 +103,11 @@ app.use(displayStateMap(options));
 
 #### options argument
 
-- `policyName`: policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
+- `policyId`: Policy ID (_required_)
+- `policyRoot`: Policy root (_required_)
+- `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
+- `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `endpointPath`: display state map endpoint path, defaults to `/__displaystatemap`.
@@ -120,7 +128,8 @@ const { is } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyName: 'policy' // required - policy name string
+  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyRoot: 'policy' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 
 app.get('/users/:id', async function(req, res) {
@@ -143,7 +152,7 @@ app.get('/users/:id', async function(req, res) {
 
 - `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
-- `options`: a javascript map containing at least`{ authorizerServiceUrl }` (_required_)
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer (_required_)
 - `packageName`: a string representing the package name for the the policy (optional)
 - `resource`: the resource to evaluate the policy over (optional)
 
@@ -157,8 +166,11 @@ The Express request object.
 
 #### options argument
 
-- `policyName`: policy name (_required_)
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
+- `policyId`: Policy ID (_required_)
+- `policyRoot`: Policy root (_required_)
+- `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
+- `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
 - `authorizerCertFile`: location on the filesystem of the CA certificate that signed the Aserto authorizer self-signed certificate. See the "Certificates" section for more information.
 - `disableTlsValidation`: ignore TLS certificate validation when creating a TLS connection to the authorizer. Defaults to false.
 - `useAuthorizationHeader`: When set to `true`, will forward the Authorization header to the authorizer. The authorizer will crack open the JWT and use that as the identity context. Defaults to `true`.
@@ -170,9 +182,9 @@ The Express request object.
 
 By default, `is` will follow the same heuristic behavior as `jwtAuthz` - it will infer the packge name from the policy name, HTTP method, and route path. If provided, the `packageName` argument will override this and specify a policy package to use.
 
-By convention, Aserto Rego policies are named in the form `policyName.METHOD.path`. Following the node.js idiom, you can also pass it in as `policyName/METHOD/path`, and the path can contain the Express parameter syntax.
+By convention, Aserto Rego policies are named in the form `policyRoot.METHOD.path`. Following the node.js idiom, you can also pass it in as `policyRoot/METHOD/path`, and the path can contain the Express parameter syntax.
 
-For example, passing in `policyName/GET/api/users/:id` will resolve to a policy called `policyName.GET.api.users.__id`.
+For example, passing in `policyRoot/GET/api/users/:id` will resolve to a policy called `policyRoot.GET.api.users.__id`.
 
 #### resource argument
 

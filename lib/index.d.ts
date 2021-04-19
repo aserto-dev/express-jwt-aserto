@@ -8,13 +8,14 @@ export = {
 
 declare function jwtAuthz(
   options: jwtAuthz.AuthzOptions,
-  policyName?: string,
+  policyRoot?: string,
   resourceKey?: string
 ): express.Handler;
 
 declare namespace jwtAuthz {
   export interface AuthzOptions {
-    policyName: string;
+    policyRoot: string;
+    policyId: string;
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
@@ -34,7 +35,8 @@ declare function displayStateMap(
 
 declare namespace displayStateMap {
   export interface DisplayStateMapOptions {
-    policyName: string;
+    policyRoot: string;
+    policyId: string;
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
@@ -62,7 +64,8 @@ declare namespace is {
   export type Resource = string;
 
   export interface AuthzOptions {
-    policyName: string;
+    policyRoot: string;
+    policyId: string;
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
