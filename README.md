@@ -46,11 +46,11 @@ By default, `jwtAuthz` derives the policy file name and resource key from the Ex
 
 #### arguments
 
-`jwtAuthz(options[, packageName[, resourceKey]])`:
+`jwtAuthz(options[, packageName[, resourceMap]])`:
 
 - `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId, policyRoot }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer
-- `packageName`: a string representing the policy package name
-- `resourceKey`: a key into the req.params map to extract the resource from
+- `packageName`: a string representing the policy package name (optional)
+- `resourceMap`: a map of key/value pairs to use as the resource context for evaluation (optional)
 
 #### options argument
 
@@ -76,11 +76,11 @@ By convention, Aserto policy package names are of the form `policyRoot.METHOD.pa
 
 Passing in the `packageName` parameter into the `jwtAuthz()` function will override this behavior.
 
-#### resourceKey argument
+#### resourceMap argument
 
-By default, the resource key will be derived from the first parameter marker in the route path. For example, if the route path is `/api/users/:id`, the resource will be extracted from `req.params.id'`.
+By default, the resource map will be req.params. For example, if the route path is `/api/users/:id`, the resource will be `{ 'id': 'value-of-id' }`.
 
-Passing in the `resourceKey` parameter into the `jwtAuthz()` function will override this behavior. For example, passing in `myParam` will retrieve the resource from `req.params.myParam`.
+Passing in the `resourceMap` parameter into the `jwtAuthz()` function will override this behavior.
 
 ### displayStateMap middleware
 
@@ -148,13 +148,13 @@ app.get('/users/:id', async function(req, res) {
 
 #### arguments
 
-`isAllowed(decision, req, options[, packageName[, resource]])`:
+`isAllowed(decision, req, options[, packageName[, resourceMap]])`:
 
 - `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
 - `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer (_required_)
 - `packageName`: a string representing the package name for the the policy (optional)
-- `resource`: the resource to evaluate the policy over (optional)
+- `resourceMap`: a map of key/value pairs to use as the resource context for evaluation (optional)
 
 #### decision argument
 
@@ -186,9 +186,11 @@ By convention, Aserto Rego policies are named in the form `policyRoot.METHOD.pat
 
 For example, passing in `policyRoot/GET/api/users/:id` will resolve to a policy called `policyRoot.GET.api.users.__id`.
 
-#### resource argument
+#### resourceMap argument
 
-By default, `is` follows the same behavior as `jwtAuthz` and pick up the resource from the first parameter specified in the route. For example, if the route path is `/api/users/:id`, the resource will be extracted from `req.params.id`. If the `resource` argument is provided, it will be used instead.
+By default, `is` follows the same behavior as `jwtAuthz` in that resource map will be `req.params`. For example, if the route path is `/api/users/:id`, the resource will be `{ 'id': 'value-of-id' }`.
+
+Passing in the `resourceMap` parameter into the `is()` function will override this behavior.
 
 ## Certificates
 

@@ -8,11 +8,14 @@ export = {
 
 declare function jwtAuthz(
   options: jwtAuthz.AuthzOptions,
-  policyRoot?: string,
-  resourceKey?: string
+  policyRoot?: jwtAuthz.Policy,
+  resourceMap?: jwtAuthz.ResourceMap
 ): express.Handler;
 
 declare namespace jwtAuthz {
+  export type Policy = string;
+  export type ResourceMap = Record<string, string>;
+
   export interface AuthzOptions {
     policyRoot: string;
     policyId: string;
@@ -56,12 +59,12 @@ declare function is(
   req: express.Request,
   options: is.AuthzOptions,
   policy?: is.Policy,
-  resource?: is.Resource
+  resourceMap?: is.ResourceMap
 ): boolean;
 
 declare namespace is {
   export type Policy = string;
-  export type Resource = string;
+  export type ResourceMap = Record<string, string>;
 
   export interface AuthzOptions {
     policyRoot: string;
