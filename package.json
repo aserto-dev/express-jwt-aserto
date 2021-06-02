@@ -1,6 +1,6 @@
 {
   "name": "express-jwt-aserto",
-  "version": "1.0.62",
+  "version": "1.0.63",
   "description": "Authorize access to an endpoint",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
