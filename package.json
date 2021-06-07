@@ -31,7 +31,7 @@
     "chai": "^4.2.0",
     "husky": "^1.1.4",
     "mocha": "^5.2.0",
-    "prettier": "^1.14.3",
+    "prettier": "^2.3.1",
     "pretty-quick": "^1.8.0"
   },
   "husky": {
