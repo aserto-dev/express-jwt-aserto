@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "mocha"
+    "test": "jest"
   },
   "files": [
     "lib"
@@ -30,6 +30,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "husky": "^1.1.4",
+    "jest": "^27.0.6",
     "mocha": "^5.2.0",
     "prettier": "^1.14.3",
     "pretty-quick": "^1.8.0"
