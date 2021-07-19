@@ -5,13 +5,6 @@ jest.mock('axios');
 
 jest.setTimeout(30000);
 
-let options = {
-  policyRoot: 'root',
-  policyId: '123',
-  authorizerServiceUrl: 'aserto.com',
-  identityHeader: 'Authorization'
-};
-
 const req = {
   headers: {
     authorization:
@@ -27,10 +20,17 @@ describe('should succeed', () => {
       post: () =>
         Promise.resolve({
           data: {
-            decisions: [{ is: jest.fn() }]
+            decisions: [{ is: true }]
           }
         })
     }));
+
+    const options = {
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
+    };
 
     const next = jest.fn();
 
@@ -43,7 +43,6 @@ describe('should succeed', () => {
     const response = jwtAuthz(options, packageName);
     await response(req, res, next);
 
-    expect.assertions(1);
     await expect(next).toBeCalled();
   });
 });
@@ -69,10 +68,16 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
+    const options = {
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
+    };
+
     const response = jwtAuthz(options, packageName);
     await response(req, res, next);
 
-    expect.assertions(3);
     expect(res.append).toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="express-jwt-aserto%3A%20error%3A%20some%20error"'
@@ -99,10 +104,16 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
+    const options = {
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
+    };
+
     const response = jwtAuthz(options, packageName);
     await response(req, res, next);
 
-    expect.assertions(3);
     expect(res.append).toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="Forbidden%20by%20policy%20aserto.GET.user"'
@@ -125,10 +136,16 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
+    const options = {
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
+    };
+
     const response = jwtAuthz(options, packageName);
     await response(req, res, next);
 
-    expect.assertions(3);
     expect(res.append).toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="some%20thrown%20error"'
@@ -157,9 +174,12 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
-    options = {
+    const options = {
       failWithError: true,
-      ...options
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
     };
 
     const response = jwtAuthz(options, packageName);
@@ -171,7 +191,6 @@ describe('should error', () => {
       message: `express-jwt-aserto: error: ${message}`
     };
 
-    expect.assertions(3);
     expect(res.append).not.toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="express-jwt-aserto%3A%20error%3A%20some%20error"'
@@ -200,9 +219,12 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
-    options = {
+    const options = {
       failWithError: true,
-      ...options
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
     };
 
     const response = jwtAuthz(options, packageName);
@@ -215,7 +237,6 @@ describe('should error', () => {
       message: `Forbidden by policy ${packageName}`
     };
 
-    expect.assertions(3);
     expect(res.append).not.toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="Forbidden%20by%20policy%20aserto.GET.user"'
@@ -238,9 +259,12 @@ describe('should error', () => {
       status: jest.fn(() => ({ send }))
     };
 
-    options = {
+    const options = {
       failWithError: true,
-      ...options
+      policyRoot: 'root',
+      policyId: '123',
+      authorizerServiceUrl: 'aserto.com',
+      identityHeader: 'Authorization'
     };
 
     const response = jwtAuthz(options, packageName);
@@ -253,7 +277,6 @@ describe('should error', () => {
       message
     };
 
-    expect.assertions(3);
     expect(res.append).not.toHaveBeenCalledWith(
       'WWW-Authenticate',
       'Bearer error="some%20thrown%20error"'
