@@ -23,16 +23,20 @@ describe('should succeed', () => {
 
     const finalOptions = {
       authorizerApiKey: null,
-      authorizerCert: null,
       authorizerUrl: 'https://localhost:8383/api/v1/authz',
-      disableTlsValidation: false,
       failWithError: false,
-      identity: undefined,
       policyId: 'policy-id-guid',
       policyRoot: 'mycars',
-      subject: undefined,
       tenantId: null,
-      useAuthorizationHeader: true
+      identityContextOptions: {
+        identity: undefined,
+        subject: undefined,
+        useAuthorizationHeader: true
+      },
+      axiosOptions: {
+        authorizerCert: null,
+        disableTlsValidation: false
+      }
     };
 
     expect(returnedOptions).toStrictEqual(finalOptions);
