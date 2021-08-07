@@ -148,7 +148,7 @@ app.get('/users/:id', async function(req, res) {
 
 #### arguments
 
-`isAllowed(decision, req, options[, packageName[, resourceMap]])`:
+`is(decision, req, options[, packageName[, resourceMap]])`:
 
 - `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
