@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aserto/express-jwt-aserto.git"
+    "url": "git+https://github.com/aserto-dev/express-jwt-aserto.git"
   },
   "keywords": [
     "express",
@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/aserto-dev/express-jwt-aserto/issues"
   },
-  "homepage": "https://github.com/auth0-dev/express-jwt-aserto#readme",
+  "homepage": "https://github.com/aserto-dev/express-jwt-aserto#readme",
   "devDependencies": {
     "husky": "^1.1.4",
     "jest": "^27.0.6",
