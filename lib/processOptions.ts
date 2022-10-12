@@ -1,15 +1,25 @@
 // process options map
+import express from "express";
 
-const fs = require('fs');
-const log = require('./log');
+import { AuthzOptions, identityContext } from "./index.d";
+const fs = require("fs");
+const log = require("./log");
 
-module.exports = (options, req, res, next) => {
-  const error = (res, err_message = 'express-jwt-aserto: unknown error') => {
-    if (options && options.failWithError) {
+export default (
+  options: AuthzOptions,
+  req: express.Request,
+  res?: express.Response,
+  next?: express.NextFunction
+) => {
+  const error = (
+    res: express.Response,
+    err_message = "express-jwt-aserto: unknown error"
+  ) => {
+    if (options && options.failWithError && next) {
       return next({
         statusCode: 403,
-        error: 'Forbidden',
-        message: err_message
+        error: "Forbidden",
+        message: `express-jwt-aserto: ${err_message}`,
       });
     }
 
@@ -19,21 +29,18 @@ module.exports = (options, req, res, next) => {
   // set the authorizer URL
   const authorizerServiceUrl =
     options &&
-    typeof options.authorizerServiceUrl === 'string' &&
+    typeof options.authorizerServiceUrl === "string" &&
     options.authorizerServiceUrl;
-  if (!authorizerServiceUrl) {
-    return error(
-      res,
-      'express-jwt-aserto: must provide authorizerServiceUrl in option map'
-    );
+  if (!authorizerServiceUrl && res) {
+    return error(res, "must provide authorizerServiceUrl in option map");
   }
-  const authorizerUrl = `${authorizerServiceUrl}/api/v1/authz`;
+  const authorizerUrl = `${authorizerServiceUrl}/api/v2/authz`;
 
   // set the authorizer API key
   let authorizerApiKey = null;
   if (
     options &&
-    typeof options.authorizerApiKey === 'string' &&
+    typeof options.authorizerApiKey === "string" &&
     options.authorizerApiKey
   ) {
     authorizerApiKey = options.authorizerApiKey;
@@ -41,7 +48,7 @@ module.exports = (options, req, res, next) => {
 
   // set the tenant ID
   let tenantId = null;
-  if (options && typeof options.tenantId === 'string' && options.tenantId) {
+  if (options && typeof options.tenantId === "string" && options.tenantId) {
     tenantId = options.tenantId;
   }
 
@@ -50,16 +57,17 @@ module.exports = (options, req, res, next) => {
   if (
     options &&
     options.disableTlsValidation !== null &&
-    typeof options.disableTlsValidation === 'boolean'
+    typeof options.disableTlsValidation === "boolean"
   ) {
     disableTlsValidation = options.disableTlsValidation;
   }
 
   // set the authorizer cert file
-  let authorizerCertFile = null;
+  // TODO: Fix this type and default value
+  let authorizerCertFile: string = "";
   if (
     options &&
-    typeof options.authorizerCertFile === 'string' &&
+    typeof options.authorizerCertFile === "string" &&
     options.authorizerCertFile
   ) {
     authorizerCertFile = options.authorizerCertFile;
@@ -67,7 +75,7 @@ module.exports = (options, req, res, next) => {
 
   let authorizerCert = null;
   if (!disableTlsValidation && authorizerCertFile) {
-    const certfilesplit = authorizerCertFile.split('$HOME/');
+    const certfilesplit = authorizerCertFile.split("$HOME/");
     const certfile =
       certfilesplit.length > 1
         ? `${process.env.HOME}/${certfilesplit[1]}`
@@ -76,37 +84,32 @@ module.exports = (options, req, res, next) => {
       authorizerCert = fs.readFileSync(certfile);
     } catch (e) {
       const text = `Certificate for CA not found at ${authorizerCertFile}. To disable TLS certificate validation, use the 'disableTlsValidation: true' option.`;
-      log(`express-jwt-aserto: ${text}`, 'ERROR');
-      return error(res, `express-jwt-aserto: ${text}`);
+      log(text, "ERROR");
+      return res && error(res, text);
     }
   }
 
   // set the policy ID
-  const policyId =
-    options && typeof options.policyId === 'string' && options.policyId;
-  if (!policyId) {
-    return error(
-      res,
-      'express-jwt-aserto: must provide policyId in option map'
-    );
+  const policyName =
+    options && typeof options.policyName === "string" && options.policyName;
+  if (!policyName && res) {
+    return error(res, "must provide policyName in option map");
   }
 
   // set the policy root
   const policyRoot =
-    options && typeof options.policyRoot === 'string' && options.policyRoot;
-  if (!policyRoot) {
-    return error(
-      res,
-      'express-jwt-aserto: must provide policyRoot in option map'
-    );
+    options && typeof options.policyRoot === "string" && options.policyRoot;
+
+  if (!policyRoot && res) {
+    return error(res, "must provide policyRoot in option map");
   }
 
   // set the identity header
-  let identityHeader = 'identity';
+  let identityHeader = "identity";
   if (
     options &&
     options.identityHeader !== null &&
-    typeof options.identityHeader === 'string'
+    typeof options.identityHeader === "string"
   ) {
     identityHeader = options.identityHeader;
   }
@@ -119,7 +122,7 @@ module.exports = (options, req, res, next) => {
   if (
     options &&
     options.useAuthorizationHeader !== null &&
-    typeof options.useAuthorizationHeader === 'boolean'
+    typeof options.useAuthorizationHeader === "boolean"
   ) {
     useAuthorizationHeader = options.useAuthorizationHeader;
   }
@@ -129,31 +132,34 @@ module.exports = (options, req, res, next) => {
   if (
     options &&
     options.failWithError !== null &&
-    typeof options.failWithError === 'boolean'
+    typeof options.failWithError === "boolean"
   ) {
     failWithError = options.failWithError;
   }
 
   // set the user key
-  let userKey = 'user';
+  let userKey = "user";
   if (
     options &&
-    options.customUserKey != null &&
-    typeof options.customUserKey === 'string'
+    options.customUserKey !== null &&
+    typeof options.customUserKey === "string"
   ) {
     userKey = options.customUserKey;
   }
 
   // set the subject key
-  let subjectKey = 'sub';
+  let subjectKey = "sub";
   if (
     options &&
-    options.customSubjectKey != null &&
-    typeof options.customSubjectKey === 'string'
+    options.customSubjectKey !== null &&
+    typeof options.customSubjectKey === "string"
   ) {
     subjectKey = options.customSubjectKey;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /* @ts-ignore */
+  //TODO: Remove the ts-ignore
   const subject = req[userKey] && req[userKey][subjectKey];
 
   return {
@@ -161,16 +167,17 @@ module.exports = (options, req, res, next) => {
     authorizerUrl,
     authorizerApiKey,
     tenantId,
-    policyId,
-    policyRoot,
+    policyName: policyName as string,
+    policyRoot: policyRoot as string,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     identityContextOptions: {
       useAuthorizationHeader,
       identity,
-      subject
-    },
+      subject,
+    } as identityContext.Options,
     axiosOptions: {
       authorizerCert,
-      disableTlsValidation
-    }
+      disableTlsValidation,
+    },
   };
 };
