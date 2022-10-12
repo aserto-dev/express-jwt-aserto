@@ -32,7 +32,7 @@ const { jwtAuthz } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyName: 'policy-name', // required
   policyRoot: 'mycars' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 
@@ -48,14 +48,14 @@ By default, `jwtAuthz` derives the policy file name and resource key from the Ex
 
 `jwtAuthz(options[, packageName[, resourceMap]])`:
 
-- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId, policyRoot }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyName, policyRoot }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer
 - `packageName`: a string representing the policy package name (optional)
 - `resourceMap`: a map of key/value pairs to use as the resource context for evaluation (optional)
 
 #### options argument
 
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `policyId`: Policy ID (_required_)
+- `policyName`: Policy ID (_required_)
 - `policyRoot`: Policy root (_required_)
 - `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
 - `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
@@ -91,7 +91,7 @@ const { displayStateMap } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyName: 'policy-name', // required
   policyRoot: 'policy' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 app.use(displayStateMap(options));
@@ -104,7 +104,7 @@ app.use(displayStateMap(options));
 #### options argument
 
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `policyId`: Policy ID (_required_)
+- `policyName`: Policy Name (_required_)
 - `policyRoot`: Policy root (_required_)
 - `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
 - `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
@@ -128,7 +128,7 @@ const { is } = require('express-jwt-aserto');
 
 const options = {
   authorizerServiceUrl: 'https://localhost:8383', // required - must pass a valid URL
-  policyId: 'policy-id-guid', // required - GUID representing policy ID
+  policyName: 'policy-name', // required
   policyRoot: 'policy' // required - must be a string representing the policy root (the first component of the policy module name)
 };
 
@@ -152,7 +152,7 @@ app.get('/users/:id', async function(req, res) {
 
 - `decision`: a string representing the name of the decision - typically `allowed` (_required_)
 - `req`: Express request object (_required_)
-- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyId }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer (_required_)
+- `options`: a javascript map containing at least `{ authorizerServiceUrl, policyName }` as well as `authorizerApiKey` and `tenantId` for the hosted authorizer (_required_)
 - `packageName`: a string representing the package name for the the policy (optional)
 - `resourceMap`: a map of key/value pairs to use as the resource context for evaluation (optional)
 
@@ -167,7 +167,7 @@ The Express request object.
 #### options argument
 
 - `authorizerServiceUrl`: URL of authorizer service (_required_)
-- `policyId`: Policy ID (_required_)
+- `policyName`: Policy ID (_required_)
 - `policyRoot`: Policy root (_required_)
 - `authorizerApiKey`: API key for authorizer service (_required_ if using hosted authorizer)
 - `tenantId`: Aserto tenant ID (_required_ if using hosted authorizer)
