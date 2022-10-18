@@ -1,9 +1,11 @@
 // process options map
 import express from "express";
+import { credentials } from "@grpc/grpc-js";
+import { ChannelCredentials } from "@grpc/grpc-js";
 
-import { AuthzOptions, identityContext } from "./index.d";
-const fs = require("fs");
-const log = require("./log");
+import { AuthzOptions, IdentityContextOptions } from "./index.d";
+import { log } from "./log";
+import { getSSLCredentials } from "./ssl";
 
 export default (
   options: AuthzOptions,
@@ -22,7 +24,7 @@ export default (
         message: `express-jwt-aserto: ${err_message}`,
       });
     }
-
+    log(err_message, "ERROR");
     res.status(403).send(err_message);
   };
 
@@ -34,7 +36,7 @@ export default (
   if (!authorizerServiceUrl && res) {
     return error(res, "must provide authorizerServiceUrl in option map");
   }
-  const authorizerUrl = `${authorizerServiceUrl}/api/v2/authz`;
+  const authorizerUrl = `${authorizerServiceUrl}`;
 
   // set the authorizer API key
   let authorizerApiKey = null;
@@ -64,29 +66,21 @@ export default (
 
   // set the authorizer cert file
   // TODO: Fix this type and default value
-  let authorizerCertFile: string = "";
+  let authorizerCertCAFile: string = "";
   if (
     options &&
-    typeof options.authorizerCertFile === "string" &&
-    options.authorizerCertFile
+    typeof options.authorizerCertCAFile === "string" &&
+    options.authorizerCertCAFile
   ) {
-    authorizerCertFile = options.authorizerCertFile;
+    authorizerCertCAFile = options.authorizerCertCAFile;
   }
 
-  let authorizerCert = null;
-  if (!disableTlsValidation && authorizerCertFile) {
-    const certfilesplit = authorizerCertFile.split("$HOME/");
-    const certfile =
-      certfilesplit.length > 1
-        ? `${process.env.HOME}/${certfilesplit[1]}`
-        : authorizerCertFile;
-    try {
-      authorizerCert = fs.readFileSync(certfile);
-    } catch (e) {
-      const text = `Certificate for CA not found at ${authorizerCertFile}. To disable TLS certificate validation, use the 'disableTlsValidation: true' option.`;
-      log(text, "ERROR");
-      return res && error(res, text);
-    }
+  let authorizerCert: ChannelCredentials;
+  if (!disableTlsValidation && authorizerCertCAFile) {
+    authorizerCert = getSSLCredentials(authorizerCertCAFile);
+  } else {
+    authorizerCert = credentials.createInsecure();
+    log("INSECURE CONNECTION");
   }
 
   // set the policy ID
@@ -167,17 +161,14 @@ export default (
     authorizerUrl,
     authorizerApiKey,
     tenantId,
-    policyName: policyName as string,
-    policyRoot: policyRoot as string,
+    policyName,
+    policyRoot: policyRoot! as string,
+    authorizerCert,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     identityContextOptions: {
       useAuthorizationHeader,
       identity,
       subject,
-    } as identityContext.Options,
-    axiosOptions: {
-      authorizerCert,
-      disableTlsValidation,
-    },
+    } as IdentityContextOptions,
   };
 };

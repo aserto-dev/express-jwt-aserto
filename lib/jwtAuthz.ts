@@ -9,18 +9,18 @@ import {
   IsRequest,
   IsResponse,
 } from "@aserto/node-authorizer/pkg/aserto/authorizer/v2/authorizer_pb";
-import { credentials, Metadata, ServiceError } from "@grpc/grpc-js";
+import { Metadata, ServiceError } from "@grpc/grpc-js";
 
+import { errorHandler } from "./errorHandler";
 import identityContext from "./identityContext";
 import { AuthzOptions } from "./index.d";
-import { log } from "./log";
 import processOptions from "./processOptions";
 import processParams from "./processParams";
 
 const jwtAuthz = (
   optionsParam: AuthzOptions,
-  packageName: string,
-  resourceMap: object
+  packageName?: string,
+  resourceMap?: object
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const options = processOptions(optionsParam, req, res, next);
@@ -38,34 +38,18 @@ const jwtAuthz = (
       policyName,
       policyRoot,
       identityContextOptions,
+      authorizerCert,
     } = options;
 
     // process the parameter values to extract policy and resourceContext
     const { policy, resourceContext } = processParams(
       req,
+      policyRoot,
       packageName,
-      resourceMap,
-      policyRoot
+      resourceMap
     );
 
-    const error = (
-      res: Response,
-      err_message = "express-jwt-aserto: unknown error"
-    ) => {
-      if (failWithError) {
-        return next({
-          statusCode: 403,
-          error: "Forbidden",
-          message: `express-jwt-aserto: ${err_message}`,
-        });
-      }
-
-      res.append(
-        "WWW-Authenticate",
-        `Bearer error="${encodeURIComponent(err_message)}"`
-      );
-      res.status(403).send(err_message);
-    };
+    const error = errorHandler(next, failWithError);
 
     const callAuthorizer = async () => {
       return new Promise((resolve, reject) => {
@@ -75,15 +59,12 @@ const jwtAuthz = (
             metadata.add("authorization", `basic ${authorizerApiKey}`);
           tenantId && metadata.add("aserto-tenant-id", tenantId);
 
-          const client = new AuthorizerClient(
-            authorizerUrl,
-            credentials.createInsecure()
-          );
+          const client = new AuthorizerClient(authorizerUrl, authorizerCert);
           const isRequest = new IsRequest();
           const policyContext = new PolicyContext();
 
           policyContext.setPath(policy);
-          policyContext.setName(policyName);
+          policyName && policyContext.setName(policyName);
           policyContext.setDecisionsList(["allowed"]);
 
           const idContext = identityContext(req, identityContextOptions);
@@ -100,36 +81,35 @@ const jwtAuthz = (
             (err: ServiceError, response: IsResponse) => {
               if (err) {
                 const message = err.message;
-                log(`'is' returned error: ${message}`, "ERROR");
-                reject(null);
+                reject(`'jwtAuthz' returned error: ${message}`);
+                return;
               }
 
               if (!response) {
-                log(`'is' returned error: No response`, "ERROR");
-                reject(false);
+                reject("'jwtAuthz' returned error: No response");
+                return;
               }
 
               const result = response.toObject();
               const allowed =
                 result.decisionsList &&
                 result.decisionsList.length &&
-                result.decisionsList[0].is;
+                result.decisionsList[0]?.is;
 
               resolve(allowed);
             }
           );
         } catch (err) {
-          log(`jwtAuthz caught exception ${err}`, "ERROR");
-          // TODO: Fix error
-          // error(res, err.message);
-          return null;
+          reject(`'jwtAuthz' caught exception ${err}`);
         }
       });
     };
 
-    const allowed = await callAuthorizer();
-    if (allowed !== null) {
+    try {
+      const allowed = await callAuthorizer();
       return allowed ? next() : error(res, `Forbidden by policy ${policy}`);
+    } catch (err) {
+      error(res, err as string);
     }
   };
 };

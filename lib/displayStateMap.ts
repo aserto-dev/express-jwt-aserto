@@ -6,16 +6,14 @@ import {
   DecisionTreeRequest,
   DecisionTreeResponse,
 } from "@aserto/node-authorizer/pkg/aserto/authorizer/v2/authorizer_pb";
-import { credentials, Metadata, ServiceError } from "@grpc/grpc-js";
+import { Metadata, ServiceError } from "@grpc/grpc-js";
 
+import { errorHandler } from "./errorHandler";
 import identityContext from "./identityContext";
-import { displayStateMap as displayStateMapD } from "./index.d";
-import { log } from "./log";
+import { DisplayStateMapOptions } from "./index.d";
 import processOptions from "./processOptions";
 
-const displayStateMap = (
-  optionsParam: displayStateMapD.DisplayStateMapOptions
-) => {
+const displayStateMap = (optionsParam: DisplayStateMapOptions) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let endpointPath = `/__displaystatemap`;
 
@@ -48,43 +46,26 @@ const displayStateMap = (
       policyName,
       policyRoot,
       identityContextOptions,
+      authorizerCert,
     } = options;
 
-    const error = (
-      res: Response,
-      err_message = "express-jwt-aserto: unknown error"
-    ) => {
-      if (failWithError) {
-        return next({
-          statusCode: 403,
-          error: "Forbidden",
-          message: `express-jwt-aserto: ${err_message}`,
-        });
-      }
-
-      res.status(403).send(err_message);
-    };
+    const error = errorHandler(next, failWithError);
 
     const callAuthorizer = async () => {
       return new Promise((resolve, reject) => {
         try {
-          // process the parameter values to extract policy and resourceContext
-
           const metadata = new Metadata();
           authorizerApiKey &&
             metadata.add("authorization", `basic ${authorizerApiKey}`);
           tenantId && metadata.add("aserto-tenant-id", tenantId);
 
-          const client = new AuthorizerClient(
-            authorizerUrl,
-            credentials.createInsecure()
-          );
+          const client = new AuthorizerClient(authorizerUrl, authorizerCert);
 
           const idContext = identityContext(req, identityContextOptions);
 
           const policyContext = new PolicyContext();
           policyContext.setPath(policyRoot);
-          policyContext.setName(policyName);
+          policyName && policyContext.setName(policyName);
           policyContext.setDecisionsList(["visible", "enabled"]);
 
           const decisionTreeRequest = new DecisionTreeRequest();
@@ -101,25 +82,24 @@ const displayStateMap = (
             metadata,
             (err: ServiceError, response: DecisionTreeResponse) => {
               if (err) {
-                const message = err.message;
-                log(`'is' returned error: ${message}`, "ERROR");
-                error(res, message);
-                return null;
+                reject(`'displayStateMap' returned error: ${err.message}`);
+                return;
               }
 
               if (!response) {
-                log(`'is' returned error: No response`, "ERROR");
-                error(res, "No response");
-                return false;
+                reject(`'displayStateMap' returned error: No response`);
+                return;
               }
-
-              response.hasPath()
-                ? resolve(response.getPath())
-                : reject("No path found");
+              if (response.hasPath()) {
+                resolve(response.getPath());
+              } else {
+                reject("'displayStateMap' returned error: No path found");
+                return;
+              }
             }
           );
-        } catch (e) {
-          error(res, e as string);
+        } catch (err) {
+          reject(`'displayStateMap' caught exception ${err}`);
         }
       });
     };
@@ -127,8 +107,8 @@ const displayStateMap = (
     try {
       const result = await callAuthorizer();
       res.send(200).send(result);
-    } catch (e) {
-      error(res, "Failed getting display state map");
+    } catch (err) {
+      error(res, err as string);
     }
   };
 };

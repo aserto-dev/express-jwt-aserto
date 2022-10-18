@@ -3,9 +3,9 @@ import express from "express";
 
 export default (
   req: express.Request,
-  packageName: string,
-  resourceMap: object,
-  policyRoot: string
+  policyRoot: string,
+  packageName?: string,
+  resourceMap?: object
 ) => {
   // if a resourceMap wasn't explicitly passed in, get it from req.params
   if (!resourceMap) {
