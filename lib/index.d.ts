@@ -24,7 +24,7 @@ declare namespace jwtAuthz {
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
-    authorizerCertCAFile: string;
+    authorizerCertCAFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
@@ -44,7 +44,7 @@ export interface DisplayStateMapOptions {
   authorizerServiceUrl: string;
   authorizerApiKey?: string;
   tenantId?: string;
-  authorizerCertCAFile: string;
+  authorizerCertCAFile?: string;
   disableTlsValidation?: boolean;
   useAuthorizationHeader?: boolean;
   identityHeader?: string;
@@ -71,7 +71,7 @@ declare namespace is {
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
-    authorizerCertCAFile: string;
+    authorizerCertCAFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
@@ -88,7 +88,7 @@ declare namespace displayStateMap {
     authorizerServiceUrl: string;
     authorizerApiKey?: string;
     tenantId?: string;
-    authorizerCertCAFile: string;
+    authorizerCertCAFile?: string;
     disableTlsValidation?: boolean;
     useAuthorizationHeader?: boolean;
     identityHeader?: string;
@@ -105,7 +105,7 @@ export interface AuthzOptions {
   authorizerServiceUrl: string;
   authorizerApiKey?: string;
   tenantId?: string;
-  authorizerCertCAFile: string;
+  authorizerCertCAFile?: string;
   disableTlsValidation?: boolean;
   useAuthorizationHeader?: boolean;
   identityHeader?: string;
