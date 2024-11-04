@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> This repository is archived and no longer maintained.
+> Use https://github.com/aserto-dev/aserto-node instead.
+
 # express-jwt-aserto ![](https://travis-ci.org/aserto/express-jwt-aserto.svg?branch=master)
 
 Aserto authorization middleware for the node Express server, based on
