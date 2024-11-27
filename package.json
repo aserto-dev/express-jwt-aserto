@@ -29,7 +29,7 @@
   "homepage": "https://github.com/aserto-dev/express-jwt-aserto#readme",
   "devDependencies": {
     "husky": "^1.1.4",
-    "jest": "^27.0.6",
+    "jest": "^29.7.0",
     "prettier": "^1.14.3",
     "pretty-quick": "^1.8.0"
   },
